@@ -1,0 +1,66 @@
+# .gitignore for AutoFolder VideoMixer
+
+# ============================================
+# DO NOT COMMIT THESE TO GITHUB
+# ============================================
+
+# Python Virtual Environment (regenerate with: python -m venv .venv)
+.venv/
+venv/
+env/
+ENV/
+
+# Build Output (users will build their own)
+build/
+dist/
+*.egg-info/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Built Executables (upload to GitHub Releases instead)
+*.exe
+*.msi
+
+# Release Packages (upload to GitHub Releases instead)
+AutoFolder-VideoMixer-v*/
+*.zip
+
+# FFmpeg Binaries (too large - users download separately)
+ffmpeg-8.0.1-full_build/
+ffmpeg-*/
+# But keep the source code!
+!ffmpeg-8.0.1-full_build/bin/AutoFolder.py
+
+# PyInstaller Build Files
+*.manifest
+*.spec.bak
+installer_output/
+
+# IDE Settings (personal preferences)
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS Files
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Test Files
+test_media/
+test_output/
+sample_*/
+
+# Temporary Files
+*.tmp
+*.log
+list_*.txt
+*.bak
+
+# Build Success Marker (auto-generated)
+BUILD_SUCCESS.md

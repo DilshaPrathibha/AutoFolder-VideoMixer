@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 import time
 import tempfile
@@ -7,12 +8,65 @@ import tkinter as tk
 from tkinter import messagebox, ttk, filedialog
 from send2trash import send2trash
 
-# ================= DEFAULT PATHS =================
-DEFAULT_INPUT_FOLDER  = r"C:\Users\Dilsha\Videos\ffmpeg"
-DEFAULT_OUTPUT_FOLDER = r"C:\Users\Dilsha\Videos\ffmpeg\ffmpeg output"
+__version__ = "1.0.0"
 
-FFMPEG_PATH  = r"C:\ffmpeg\ffmpeg-8.0.1-full_build\bin\ffmpeg.exe"
-FFPROBE_PATH = r"C:\ffmpeg\ffmpeg-8.0.1-full_build\bin\ffprobe.exe"
+# ================= RESOURCE PATH HELPER =================
+def get_resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+# ================= DEFAULT PATHS =================
+# Use user's home directory instead of hardcoded paths
+DEFAULT_INPUT_FOLDER  = os.path.join(os.path.expanduser("~"), "Videos")
+DEFAULT_OUTPUT_FOLDER = os.path.join(os.path.expanduser("~"), "Videos", "AutoFolder_Output")
+
+# Try to find FFmpeg in common locations
+def find_ffmpeg():
+    """Attempt to locate FFmpeg executable"""
+    # First check same directory as script (since we're in bin folder with ffmpeg)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    same_dir_ffmpeg = os.path.join(script_dir, "ffmpeg.exe")
+    same_dir_ffprobe = os.path.join(script_dir, "ffprobe.exe")
+    
+    if os.path.exists(same_dir_ffmpeg) and os.path.exists(same_dir_ffprobe):
+        return same_dir_ffmpeg, same_dir_ffprobe
+    
+    # Check bundled bin folder (for packaged app)
+    bundled_ffmpeg = get_resource_path(os.path.join("bin", "ffmpeg.exe"))
+    bundled_ffprobe = get_resource_path(os.path.join("bin", "ffprobe.exe"))
+    
+    if os.path.exists(bundled_ffmpeg) and os.path.exists(bundled_ffprobe):
+        return bundled_ffmpeg, bundled_ffprobe
+    
+    # Check system PATH
+    import shutil
+    system_ffmpeg = shutil.which("ffmpeg")
+    system_ffprobe = shutil.which("ffprobe")
+    
+    if system_ffmpeg and system_ffprobe:
+        return system_ffmpeg, system_ffprobe
+    
+    # Fallback to common installation paths
+    common_paths = [
+        r"C:\ffmpeg\bin\ffmpeg.exe",
+        r"C:\ffmpeg\ffmpeg-8.0.1-full_build\bin\ffmpeg.exe",
+        r"C:\Program Files\ffmpeg\bin\ffmpeg.exe",
+    ]
+    
+    for path in common_paths:
+        if os.path.exists(path):
+            ffprobe = path.replace("ffmpeg.exe", "ffprobe.exe")
+            if os.path.exists(ffprobe):
+                return path, ffprobe
+    
+    return None, None
+
+FFMPEG_PATH, FFPROBE_PATH = find_ffmpeg()
 # ================================================
 
 # ================= SETTINGS ======================
@@ -183,8 +237,20 @@ def final_concat(list_file, output):
 
 class App:
     def __init__(self, root):
-        root.title("Media Combiner")
+        root.title(f"AutoFolder VideoMixer v{__version__}")
         root.resizable(False, False)
+        
+        # Check if FFmpeg is available
+        if not FFMPEG_PATH or not FFPROBE_PATH:
+            messagebox.showerror(
+                "FFmpeg Not Found",
+                "FFmpeg and FFprobe are required but not found.\n\n"
+                "Please install FFmpeg and ensure it's in your system PATH,\n"
+                "or place ffmpeg.exe and ffprobe.exe in a 'bin' folder next to this application.\n\n"
+                "Download from: https://ffmpeg.org/download.html"
+            )
+            root.destroy()
+            return
 
         frame = ttk.Frame(root, padding=14)
         frame.grid(row=0, column=0)
