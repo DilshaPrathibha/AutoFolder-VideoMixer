@@ -1,9 +1,28 @@
 # 🎬 AutoFolder VideoMixer
 
+[![Release](https://img.shields.io/github/v/release/DilshaPrathibha/AutoFolder-VideoMixer)](https://github.com/DilshaPrathibha/AutoFolder-VideoMixer/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/DilshaPrathibha/AutoFolder-VideoMixer/total)](https://github.com/DilshaPrathibha/AutoFolder-VideoMixer/releases)
+[![Platform](https://img.shields.io/badge/platform-Windows-blue)](https://github.com/DilshaPrathibha/AutoFolder-VideoMixer)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 AutoFolder VideoMixer is a **Windows desktop application** that automatically converts and combines **videos and images from a folder into a single MP4 video**.  
 It is designed for fast, repeatable video creation without manual editing.
 
 Perfect for content creators, automation workflows, digital signage, and batch video generation.
+
+---
+
+## 📥 Download
+
+**[⬇️ Download Latest Release (v1.0.0)](https://github.com/DilshaPrathibha/AutoFolder-VideoMixer/releases/latest)**
+
+### Quick Install:
+1. Download `AutoFolder-VideoMixer-v1.0.0-Windows.zip`
+2. Extract the ZIP file
+3. Run `AutoFolder-VideoMixer.exe`
+4. That's it! No installation needed.
+
+**Requirements:** Windows 10/11 (64-bit)
 
 ---
 
