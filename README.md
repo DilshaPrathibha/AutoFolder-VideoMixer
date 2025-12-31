@@ -11,7 +11,17 @@ Perfect for content creators, automation workflows, digital signage, and batch v
 
 ---
 
-## 📥 Download
+## � Application Interface
+
+<p align="center">
+  <img src="docs/app-interface-v1.1.0.png" alt="AutoFolder VideoMixer v1.1.0 Interface" width="600">
+</p>
+
+*AutoFolder VideoMixer v1.1.0 - Clean, intuitive interface with custom icon and smart video length mode*
+
+---
+
+## �📥 Download
 
 **[⬇️ Download Latest Release (v1.1.0)](https://github.com/DilshaPrathibha/AutoFolder-VideoMixer/releases/latest)**
 
