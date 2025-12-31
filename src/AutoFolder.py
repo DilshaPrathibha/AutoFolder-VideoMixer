@@ -7,8 +7,9 @@ import random
 import tkinter as tk
 from tkinter import messagebox, ttk, filedialog
 from send2trash import send2trash
+import webbrowser
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 # ================= RESOURCE PATH HELPER =================
 def get_resource_path(relative_path):
@@ -240,6 +241,14 @@ class App:
         root.title(f"AutoFolder VideoMixer v{__version__}")
         root.resizable(False, False)
         
+        # Set window icon
+        try:
+            icon_path = get_resource_path('icon.ico')
+            if os.path.exists(icon_path):
+                root.iconbitmap(icon_path)
+        except Exception as e:
+            pass  # Icon is optional, continue without it
+        
         # Check if FFmpeg is available
         if not FFMPEG_PATH or not FFPROBE_PATH:
             messagebox.showerror(
@@ -259,9 +268,16 @@ class App:
         self.output_var = tk.StringVar(value=DEFAULT_OUTPUT_FOLDER)
         self.order_var = tk.StringVar(value=ORDER_NAME)
 
-        self.natural_var = tk.BooleanVar()
+        self.length_mode_var = tk.StringVar(value="Natural")
+        self.natural_var = tk.BooleanVar(value=True)  # Default to natural mode
         self.auto_var = tk.BooleanVar()
         self.delete_var = tk.BooleanVar()
+        self.delete_var.trace_add("write", self.confirm_delete)
+        self.auto_var.trace_add("write", self.check_auto_natural)
+        self.length_mode_var.trace_add("write", self.on_length_mode_change)
+        self.dont_ask_delete = False  # Flag for "don't ask again"
+        self.confirming_delete = False  # Flag to prevent recursive dialog calls
+        self.has_generated_once = False  # Flag to track if Generate button has been clicked
 
         # ----- Input folder -----
         ttk.Label(frame, text="Input folder:").grid(row=0, column=0, sticky="w")
@@ -273,11 +289,31 @@ class App:
         ttk.Entry(frame, textvariable=self.output_var, width=42).grid(row=1, column=1, pady=6)
         ttk.Button(frame, text="Browse", command=self.pick_output).grid(row=1, column=2, padx=6)
 
-        # ----- Minutes -----
-        ttk.Label(frame, text="Final video length (minutes):").grid(row=2, column=0, sticky="w")
-        self.minutes_entry = ttk.Entry(frame, width=28)
-        self.minutes_entry.grid(row=2, column=1, sticky="w")
-
+        # ----- Video length mode (dropdown on left, time input on right) -----
+        ttk.Label(frame, text="Video length mode:").grid(row=2, column=0, sticky="w")
+        
+        # Create a sub-frame for the dropdown and entry
+        length_frame = ttk.Frame(frame)
+        length_frame.grid(row=2, column=1, columnspan=2, sticky="w")
+        
+        # Dropdown menu
+        self.length_mode_combo = ttk.Combobox(
+            length_frame,
+            textvariable=self.length_mode_var,
+            values=["Natural", "Custom"],
+            state="readonly",
+            width=18
+        )
+        self.length_mode_combo.grid(row=0, column=0, padx=(0, 8))
+        
+        # Time input entry
+        self.minutes_entry = ttk.Entry(length_frame, width=20)
+        self.minutes_entry.grid(row=0, column=1)
+        self.minutes_entry.bind("<FocusIn>", self.on_minutes_click)
+        # Initialize with "Click to calculate..." since default mode is Natural
+        self.minutes_entry.insert(0, "Click to calculate...")
+        self.minutes_entry.config(state="readonly")
+        
         self.saved_minutes = ""
 
         # ----- Image duration -----
@@ -285,11 +321,6 @@ class App:
         self.image_duration_entry = ttk.Entry(frame, width=28)
         self.image_duration_entry.insert(0, str(DEFAULT_IMAGE_DURATION))
         self.image_duration_entry.grid(row=3, column=1, sticky="w", pady=6)
-
-        # ----- Natural mode -----
-        self.natural_var.trace_add("write", self.update_estimate)
-        ttk.Checkbutton(frame, text="Combine until media ends", variable=self.natural_var)\
-            .grid(row=4, column=0, columnspan=3, sticky="w", pady=(10, 6))
 
         # ----- Order -----
         ttk.Label(frame, text="Order:").grid(row=5, column=0, sticky="w")
@@ -300,8 +331,6 @@ class App:
             state="readonly",
             width=26
         ).grid(row=5, column=1, sticky="w")
-
-        self.order_var.trace_add("write", self.update_estimate)
 
         # ----- Auto + delete -----
         ttk.Checkbutton(frame, text="Auto combine when files change", variable=self.auto_var)\
@@ -315,19 +344,141 @@ class App:
 
         # ----- Progress -----
         self.progress_label = ttk.Label(frame, text="")
-        self.progress_label.grid(row=8, column=0, columnspan=3, sticky="w", pady=(10, 6))
+        self.progress_label.grid(row=8, column=0, columnspan=3, sticky="w", pady=(10, 2))
+        
+        # ----- Auto-monitoring status indicator -----
+        self.auto_status_label = ttk.Label(frame, text="", font=('Segoe UI', 8), foreground="#666666")
+        self.auto_status_label.grid(row=9, column=0, columnspan=3, sticky="w", pady=(2, 6))
 
         # ----- Buttons -----
         btns = ttk.Frame(frame)
-        btns.grid(row=9, column=0, columnspan=3, sticky="e", pady=(10, 0))
+        btns.grid(row=10, column=0, columnspan=3, sticky="e", pady=(10, 0))
 
         ttk.Button(btns, text="Generate", command=self.run).grid(row=0, column=0, padx=6)
         ttk.Button(btns, text="Exit", command=root.destroy).grid(row=0, column=1)
+
+        # ----- Creator Info -----
+        creator_frame = ttk.Frame(frame)
+        creator_frame.grid(row=11, column=0, columnspan=3, pady=(15, 0))
+        
+        ttk.Separator(frame, orient='horizontal').grid(row=12, column=0, columnspan=3, sticky='ew', pady=(10, 8))
+        
+        # Creator info in one line with clickable name
+        creator_container = ttk.Frame(frame)
+        creator_container.grid(row=13, column=0, columnspan=3)
+        
+        ttk.Label(creator_container, text="Created by: ", font=('Segoe UI', 8)).pack(side='left')
+        
+        # Creator name (clickable mailto link)
+        name_label = tk.Label(
+            creator_container, 
+            text="Dilsha Prathibha", 
+            font=('Segoe UI', 8, 'bold'),
+            cursor='hand2'
+        )
+        name_label.pack(side='left')
+        name_label.bind("<Button-1>", lambda e: webbrowser.open("mailto:dilshaprathibha@gmail.com"))
 
         root.bind("<Return>", lambda e: self.run())
 
         self.last_snapshot = set()
         self.schedule_auto_check(root)
+
+    def confirm_delete(self, *_):
+        # Prevent recursive calls when we programmatically change the checkbox
+        if self.confirming_delete:
+            return
+            
+        if self.delete_var.get():
+            # Skip confirmation if user chose "don't ask again"
+            if self.dont_ask_delete:
+                return
+            
+            # Set flag to prevent recursive calls
+            self.confirming_delete = True
+            
+            # Immediately uncheck the box - it will only be rechecked if user clicks Yes
+            self.delete_var.set(False)
+            
+            # Force GUI update to show unchecked state immediately
+            self.delete_var._root.update_idletasks()
+            
+            # Create custom dialog with "Don't ask again" checkbox
+            dialog = tk.Toplevel()
+            dialog.title("Warning")
+            dialog.resizable(False, False)
+            dialog.transient()
+            dialog.grab_set()
+            
+            # Center the dialog
+            dialog.geometry("400x180")
+            dialog.update_idletasks()
+            x = (dialog.winfo_screenwidth() // 2) - (400 // 2)
+            y = (dialog.winfo_screenheight() // 2) - (180 // 2)
+            dialog.geometry(f"400x180+{x}+{y}")
+            
+            # Warning icon and message
+            frame = ttk.Frame(dialog, padding=20)
+            frame.pack(fill='both', expand=True)
+            
+            message = tk.Label(
+                frame,
+                text="⚠️ Warning: Source files will be deleted after combining!\n\n"
+                     "Files will be moved to the Recycle Bin.",
+                justify='left',
+                wraplength=350,
+                font=('Segoe UI', 9)
+            )
+            message.pack(pady=(0, 15))
+            
+            # "Don't ask again" checkbox
+            dont_ask_var = tk.BooleanVar()
+            dont_ask_check = ttk.Checkbutton(
+                frame,
+                text="Don't show this warning again",
+                variable=dont_ask_var
+            )
+            dont_ask_check.pack(anchor='w', pady=(0, 15))
+            
+            # Buttons
+            btn_frame = ttk.Frame(frame)
+            btn_frame.pack()
+            
+            result = {'value': False}
+            
+            def on_ok():
+                result['value'] = True
+                if dont_ask_var.get():
+                    self.dont_ask_delete = True
+                dialog.destroy()
+            
+            def on_close():
+                result['value'] = False
+                dialog.destroy()
+            
+            # Handle window close button (X) - cancel action
+            dialog.protocol("WM_DELETE_WINDOW", on_close)
+            
+            ttk.Button(btn_frame, text="OK", command=on_ok, width=15).pack()
+            
+            # Wait for dialog to close
+            dialog.wait_window()
+            
+            # Only check the box if user clicked "OK"
+            if result['value']:
+                self.delete_var.set(True)
+            
+            # Reset flag
+            self.confirming_delete = False
+
+    def check_auto_natural(self, *_):
+        """Auto-enable 'Natural' mode if final video length is empty and auto-combine is checked"""
+        if self.auto_var.get():
+            # Check if minutes entry is empty
+            minutes_value = self.minutes_entry.get().strip()
+            if not minutes_value:
+                self.length_mode_var.set("Natural")
+                self.natural_var.set(True)
 
     def pick_input(self):
         folder = filedialog.askdirectory()
@@ -345,16 +496,54 @@ class App:
         self.progress_label.config(text=f"{text}: {current}/{total} ({percent}%)")
         self.progress_label.update_idletasks()
 
-    def update_estimate(self, *_):
-        if not self.natural_var.get():
+    def on_length_mode_change(self, *_):
+        """Called when video length mode dropdown changes"""
+        mode = self.length_mode_var.get()
+        
+        if mode == "Natural":
+            # Natural mode - show "Click to calculate..."
+            self.natural_var.set(True)
+            if str(self.minutes_entry.cget("state")) != "readonly":
+                self.saved_minutes = self.minutes_entry.get()
             self.minutes_entry.config(state="normal")
             self.minutes_entry.delete(0, tk.END)
-            self.minutes_entry.insert(0, self.saved_minutes)
-            return
+            self.minutes_entry.insert(0, "Click to calculate...")
+            self.minutes_entry.config(state="readonly")
+        else:
+            # Custom mode - enable manual input
+            self.natural_var.set(False)
+            self.minutes_entry.config(state="normal")
+            self.minutes_entry.delete(0, tk.END)
+            if self.saved_minutes:
+                self.minutes_entry.insert(0, self.saved_minutes)
+            else:
+                # Show placeholder
+                self.minutes_entry.insert(0, "Enter minutes...")
+                self.minutes_entry.config(foreground="gray")
+                # Clear placeholder on focus
+                def clear_placeholder(e):
+                    if self.minutes_entry.get() == "Enter minutes...":
+                        self.minutes_entry.delete(0, tk.END)
+                        self.minutes_entry.config(foreground="black")
+                self.minutes_entry.bind("<FocusIn>", clear_placeholder, add="+")
+            self.minutes_entry.focus()
 
-        if str(self.minutes_entry.cget("state")) != "readonly":
-            self.saved_minutes = self.minutes_entry.get()
+    def on_minutes_click(self, event):
+        """Called when user clicks on the minutes field"""
+        if self.natural_var.get():
+            # Natural mode is on - calculate estimate
+            # Show "calculating..." immediately
+            self.minutes_entry.config(state="normal")
+            self.minutes_entry.delete(0, tk.END)
+            self.minutes_entry.insert(0, "Calculating...")
+            self.minutes_entry.config(state="readonly")
+            self.minutes_entry.update_idletasks()  # Force GUI update
+            
+            # Perform calculation
+            self.calculate_estimate()
 
+    def calculate_estimate(self):
+        """Calculate and display estimated video length"""
         try:
             image_duration = float(self.image_duration_entry.get())
         except:
@@ -373,14 +562,22 @@ class App:
         root.after(AUTO_CHECK_INTERVAL_MS, lambda: self.auto_check(root))
 
     def auto_check(self, root):
-        if self.auto_var.get():
+        if self.auto_var.get() and self.has_generated_once:
+            self.auto_status_label.config(text="🟢 Auto-monitoring active - watching for file changes...")
             current_files = set(list_media_files(self.input_var.get(), self.order_var.get()))
             if current_files and current_files != self.last_snapshot:
                 self.last_snapshot = current_files
+                self.auto_status_label.config(text="🔄 Auto-monitoring: Processing changes...")
                 self.run()
+                self.auto_status_label.config(text="🟢 Auto-monitoring active - watching for file changes...")
+        else:
+            self.auto_status_label.config(text="")
         self.schedule_auto_check(root)
 
     def run(self):
+        # Mark that Generate button has been clicked at least once
+        self.has_generated_once = True
+        
         input_folder = self.input_var.get()
         output_folder = self.output_var.get()
 
@@ -424,8 +621,31 @@ class App:
             final_concat(list_file, out_video)
 
             if self.delete_var.get():
-                for f in files:
-                    send2trash(f)
+                try:
+                    deleted_count = 0
+                    failed_files = []
+                    for f in files:
+                        try:
+                            # Normalize path to handle any path issues
+                            file_path = os.path.normpath(f)
+                            if os.path.exists(file_path):
+                                send2trash(file_path)
+                                deleted_count += 1
+                            else:
+                                failed_files.append((os.path.basename(f), "File not found"))
+                        except Exception as e:
+                            failed_files.append((os.path.basename(f), str(e)))
+                    
+                    # Show result
+                    if failed_files:
+                        error_msg = f"Deleted {deleted_count} files.\n\nFailed to delete {len(failed_files)} files:\n"
+                        for fname, error in failed_files[:5]:  # Show first 5 errors
+                            error_msg += f"\n{fname}: {error}"
+                        if len(failed_files) > 5:
+                            error_msg += f"\n... and {len(failed_files) - 5} more"
+                        messagebox.showwarning("Partial Deletion", error_msg)
+                except Exception as e:
+                    messagebox.showerror("Delete Error", f"Error deleting files: {str(e)}")
 
             self.progress_label.config(text="Done ✔")
             messagebox.showinfo("Success", f"Video created:\n{out_video}")

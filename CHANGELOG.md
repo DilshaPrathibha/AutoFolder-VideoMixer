@@ -2,6 +2,57 @@
 
 All notable changes to AutoFolder VideoMixer will be documented in this file.
 
+## [1.1.0] - 2025-12-31
+
+### 🎨 UI/UX Improvements
+
+#### Added
+- **Custom Application Icon**: Professional folder icon with magic wand
+  - Visible in Windows File Explorer
+  - Displayed in application window title bar
+  - Shows in Windows taskbar
+- **Smart Video Length Mode Dropdown**: 
+  - "Natural" mode (default): Combine until media ends
+  - "Custom" mode: Manual duration input
+  - Improved UI layout on single row
+- **Auto-Monitoring Status Indicator**: 
+  - Real-time status display when auto-combine is active
+  - Shows "🟢 Auto-monitoring active - watching for file changes..."
+  - Shows "🔄 Auto-monitoring: Processing changes..." during processing
+- **On-Demand Duration Calculation**: 
+  - Click-to-calculate estimated video length
+  - Shows "Calculating..." progress indicator
+  - Improves performance by calculating only when needed
+
+#### Enhanced
+- **File Deletion Confirmation Dialog**:
+  - "Don't ask again" checkbox for user preference
+  - Only checks deletion option if user confirms "Yes"
+  - Simplified to single OK button for warnings
+- **Auto-Combine Behavior**:
+  - Now requires clicking "Generate" button at least once before auto-monitoring starts
+  - Prevents unwanted automatic processing on startup
+  - Auto-enables "Natural" mode if video length is empty
+- **Creator Information**:
+  - Clickable name with mailto: link (opens email client)
+  - Clean, professional one-line layout
+- **Layout Improvements**:
+  - Fixed overlapping progress and status labels
+  - Better spacing between UI elements
+  - Separate rows for progress and monitoring status
+
+#### Fixed
+- File deletion path normalization (handles Windows path issues)
+- Icon bundling in executable (icon.ico properly embedded)
+- Placeholder text behavior in Custom mode input field
+
+### Technical
+- Added Pillow library for icon conversion
+- Improved icon resource handling with get_resource_path()
+- Enhanced error messages for file deletion failures
+
+---
+
 ## [1.0.0] - 2025-12-28
 
 ### 🎉 Initial Release

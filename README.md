@@ -3,7 +3,6 @@
 [![Release](https://img.shields.io/github/v/release/DilshaPrathibha/AutoFolder-VideoMixer)](https://github.com/DilshaPrathibha/AutoFolder-VideoMixer/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/DilshaPrathibha/AutoFolder-VideoMixer/total)](https://github.com/DilshaPrathibha/AutoFolder-VideoMixer/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows-blue)](https://github.com/DilshaPrathibha/AutoFolder-VideoMixer)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 AutoFolder VideoMixer is a **Windows desktop application** that automatically converts and combines **videos and images from a folder into a single MP4 video**.  
 It is designed for fast, repeatable video creation without manual editing.
@@ -14,10 +13,10 @@ Perfect for content creators, automation workflows, digital signage, and batch v
 
 ## 📥 Download
 
-**[⬇️ Download Latest Release (v1.0.0)](https://github.com/DilshaPrathibha/AutoFolder-VideoMixer/releases/latest)**
+**[⬇️ Download Latest Release (v1.1.0)](https://github.com/DilshaPrathibha/AutoFolder-VideoMixer/releases/latest)**
 
 ### Quick Install:
-1. Download `AutoFolder-VideoMixer-v1.0.0-Windows.zip`
+1. Download `AutoFolder-VideoMixer-v1.1.0-Windows.zip`
 2. Extract the ZIP file
 3. Run `AutoFolder-VideoMixer.exe`
 4. That's it! No installation needed.
@@ -44,6 +43,13 @@ Perfect for content creators, automation workflows, digital signage, and batch v
 - 🗑️ Optional **safe deletion** of source files (Recycle Bin)
 - 📊 Live progress display
 - 🖱️ Simple, lightweight Tkinter GUI
+- 🎨 **Custom application icon** for professional appearance
+- 🔄 **Smart video length mode** with dropdown selection:
+  - Natural mode: Combine until media ends
+  - Custom mode: Set specific video duration
+- 💬 **Auto-monitoring status indicator** shows when background monitoring is active
+- ⚠️ **Warning dialog** for file deletion with "Don't show this warning again" option
+- 📏 **On-demand duration calculation** - Click to calculate estimated video length
 
 ---
 
@@ -51,9 +57,9 @@ Perfect for content creators, automation workflows, digital signage, and batch v
 
 1. Select an **input folder** with images and videos  
 2. Select an **output folder**
-3. Choose:
-   - Final video length **OR**
-   - “Combine until media ends”
+3. Choose **Video length mode** from dropdown:
+   - **Natural**: Combine until media ends (no looping)
+   - **Custom**: Enter specific duration in minutes (media loops to fill)
 4. Set image duration (seconds)
 5. Choose media order
 6. Click **Generate**
@@ -97,15 +103,15 @@ No timeline editing. No manual cuts. Just drop files and go.
 ## 🚀 Installation
 
 ### Option 1: Download Pre-built Executable (Easiest)
-1. Go to [Releases](https://github.com/yourusername/AutoFolder-VideoMixer/releases)
-2. Download `AutoFolder-VideoMixer-Setup.exe` or `AutoFolder-VideoMixer.exe`
-3. Run the application
-4. If FFmpeg is not bundled, install it from https://ffmpeg.org/download.html
+1. Go to [Releases](https://github.com/DilshaPrathibha/AutoFolder-VideoMixer/releases)
+2. Download `AutoFolder-VideoMixer-v1.1.0-Windows.zip`
+3. Extract and run `AutoFolder-VideoMixer.exe`
+4. FFmpeg is already bundled - no additional setup needed!
 
 ### Option 2: Run from Source
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/AutoFolder-VideoMixer.git
+   git clone https://github.com/DilshaPrathibha/AutoFolder-VideoMixer.git
    cd AutoFolder-VideoMixer
    ```
 
@@ -120,7 +126,7 @@ No timeline editing. No manual cuts. Just drop files and go.
 
 4. **Run the application**:
    ```bash
-   python AutoFolder.py
+   python src/AutoFolder.py
    ```
 
 ---
@@ -131,14 +137,17 @@ No timeline editing. No manual cuts. Just drop files and go.
 2. **Select input folder** containing your images and videos
 3. **Select output folder** for the generated video
 4. **Configure settings**:
-   - Set video length (minutes) or enable "Combine until media ends"
-   - Set image duration (how long each image appears)
-   - Choose sort order (name, date, random)
+   - Choose **Video length mode** from dropdown (Natural or Custom)
+   - If Custom: Enter video length in minutes
+   - Set **Image duration** (how long each image appears, in seconds)
+   - Choose **Sort order** (name, date newest/oldest, random)
 5. **Optional features**:
-   - Enable auto-watch to regenerate when files change
-   - Enable safe deletion to move source files to Recycle Bin after processing
+   - Enable **Auto combine when files change** to auto-regenerate (requires clicking Generate once first)
+   - Enable **Delete source files after combine** to move files to Recycle Bin after processing
 6. Click **Generate**
 7. Your combined video will be saved as `combined_YYYYMMDD_HHMMSS.mp4`
+
+**Tip:** In Natural mode, click the time input field to calculate estimated video duration!
 
 ---
 
@@ -204,15 +213,19 @@ A: The app will show an error on launch. Install FFmpeg and ensure it's in PATH 
 - Ensure output folder has write permissions
 - Check FFmpeg output in console for errors
 
-### Auto-watch Not Working
+### Auto-monitoring Not Working
+- Ensure you've clicked the "Generate" button at least once first
+- Check that "Auto combine when files change" checkbox is enabled
 - Ensure input folder exists and is accessible
-- Check that files are being added/removed (not just modified)
+- Verify that files are being added/removed (not just modified)
 
 ---
 
 ## 📄 License
 
-[Add your license here - MIT, GPL, etc.]
+This project is provided as-is without a formal license. All rights reserved by the creator.
+
+If you wish to use, modify, or distribute this software, please contact the creator for permission.
 
 ---
 
@@ -234,10 +247,28 @@ Contributions are welcome! Please:
 
 ---
 
-## 📬 Contact
+## �‍💻 Creator
 
-[Your contact information or GitHub profile]
+**Dilsha Prathibha**
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=flat&logo=linkedin)](https://www.linkedin.com/in/dilshaprathibha/)
+[![Email](https://img.shields.io/badge/Email-Contact-red?style=flat&logo=gmail)](mailto:dilshaprathibha@gmail.com)
+
+💼 Software Developer | Automation Enthusiast  
+📧 dilshaprathibha@gmail.com
+
+Feel free to reach out for questions, suggestions, or collaboration opportunities!
 
 ---
 
-**Version**: 1.0.0
+## 📬 Support
+
+If you find this project helpful, please:
+- ⭐ Star this repository
+- 🐛 Report bugs via [GitHub Issues](https://github.com/DilshaPrathibha/AutoFolder-VideoMixer/issues)
+- 💡 Suggest features or improvements
+- 🤝 Contribute via pull requests
+
+---
+
+**Version**: 1.1.0
