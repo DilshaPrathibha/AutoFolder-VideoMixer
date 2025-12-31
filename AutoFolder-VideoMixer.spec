@@ -9,7 +9,9 @@ a = Analysis(
         ('ffmpeg-8.0.1-full_build/bin/ffmpeg.exe', 'bin'),
         ('ffmpeg-8.0.1-full_build/bin/ffprobe.exe', 'bin'),
     ],
-    datas=[],
+    datas=[
+        ('icon.ico', '.'),
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -43,5 +45,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    # icon='icon.ico'  # Uncomment if you have an icon file
+    icon='icon.ico'  # Application icon
 )
