@@ -1,4 +1,4 @@
-# 🎬 AutoFolder VideoMixer
+# <img src="icon.ico" alt="icon" width="32" height="32"> AutoFolder VideoMixer
 
 [![Release](https://img.shields.io/github/v/release/DilshaPrathibha/AutoFolder-VideoMixer)](https://github.com/DilshaPrathibha/AutoFolder-VideoMixer/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/DilshaPrathibha/AutoFolder-VideoMixer/total)](https://github.com/DilshaPrathibha/AutoFolder-VideoMixer/releases)
@@ -11,7 +11,7 @@ Perfect for content creators, automation workflows, digital signage, and batch v
 
 ---
 
-## � Application Interface
+## 📸 Application Interface
 
 <p align="center">
   <img src="docs/app-interface-v1.1.0.png" alt="AutoFolder VideoMixer v1.1.0 Interface" width="600">
@@ -21,7 +21,7 @@ Perfect for content creators, automation workflows, digital signage, and batch v
 
 ---
 
-## �📥 Download
+## 📥 Download
 
 **[⬇️ Download Latest Release (v1.1.0)](https://github.com/DilshaPrathibha/AutoFolder-VideoMixer/releases/latest)**
 
@@ -257,7 +257,7 @@ Contributions are welcome! Please:
 
 ---
 
-## �‍💻 Creator
+## 👨‍💻 Creator
 
 **Dilsha Prathibha**
 
